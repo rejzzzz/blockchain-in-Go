@@ -1,13 +1,44 @@
 package main
 
-import (
-	//"fmt"
-	"fmt"
+import(
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"time"
+	"fmt"
+	"crypto/sha256"
+	"encoding/hex"
+	"strconv"
 )
 
-var blockchain []block
+func (B *block) calculateHash() string {
 
+	record := strconv.Itoa(B.index) + B.timestamp + B.data + B.previousHash + strconv.Itoa(B.Nonce)
+	for _, tx := range B.transaction{
+		record += tx.sender + tx.receiver + strconv.FormatFloat(tx.amount, 'f', -1, 64)
+	}
+	h := sha256.New()
+	h.Write([]byte(record))
+	hashed := h.Sum(nil)
+	return hex.EncodeToString(hashed)
+}
+
+func (B *block) mineBlock(difficulty int) {
+	prefix := ""
+	for i := 0; i < difficulty; i++ {
+		prefix += "0"
+	}
+
+	for {
+		B.hash = B.calculateHash()
+		if B.hash[:difficulty] == prefix {
+			break
+		}
+		B.Nonce++
+	}
+}
+
+// Genesis Block
 func createFirstBlock() block{
 	genesisBlock := block{
 		index: 0,
@@ -20,6 +51,8 @@ func createFirstBlock() block{
 	return genesisBlock
 }
 
+// Blockchain   
+var blockchain []block
 func addBlock(Data string){
 	previousBlock:= blockchain[len(blockchain)-1]
 	newBlock:= block{
@@ -28,7 +61,7 @@ func addBlock(Data string){
 		data: Data,
 		previousHash: previousBlock.hash,
 	}
-	newBlock.mineBlock(5) // 5 is the difficulty
+	newBlock.mineBlock(5) // 5 is the difficulty or salt
 	blockchain = append(blockchain, newBlock)
 }
 
@@ -52,3 +85,8 @@ func isBlockchainValid() bool{
 	return true
 }
 
+func newWallet() *wallet{
+	privateKey, _ := ecdsa.GenerateKey((elliptic.P256()), rand.Reader)
+	publicKey := append(privateKey.PublicKey.X.Bytes(), privateKey.PublicKey.Y.Bytes()...)
+	return &wallet{privateKey, publicKey}
+}
