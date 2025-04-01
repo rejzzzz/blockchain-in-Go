@@ -4,6 +4,11 @@ import (
 	"fmt"
 )
 
+var blockchain []block
+var balances = make(map[string]float64)
+var utxoSet = []UTXO{}
+
+
 func main() {
 	// first block
 	firstBlock := createFirstBlock()

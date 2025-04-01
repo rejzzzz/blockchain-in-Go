@@ -1,6 +1,6 @@
 package main
 
-import(
+import (
 	"crypto/ecdsa"
 )
 
@@ -14,13 +14,21 @@ type block struct {
 	hash         string
 }
 
-type wallet struct{
+type wallet struct {
 	privateKey *ecdsa.PrivateKey
-	publicKey []byte
+	publicKey  []byte
 }
 
-type transaction struct{
-	sender string
-	receiver string
-	amount float64
+type transaction struct {
+	sender    string
+	receiver  string
+	amount    float64
+	signature string
+}
+
+type UTXO struct {
+	TxID   string
+	Index  int
+	Amount float64
+	Owner  string
 }
